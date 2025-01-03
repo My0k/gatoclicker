@@ -12,13 +12,12 @@
         </div>
 
         <div class="game">
-          <!-- Imagen de la Rata, con evento de clic -->
           <img
             :src="rataImg"
             alt="Rata"
             class="rata"
             :class="{ 'rata-click': rataClicking }"
-            @click="clickear"
+            @click="handleRataClick"
           />
         </div>
 
@@ -35,7 +34,6 @@
         </div>
 
         <div class="gatos">
-          <!-- Muestra todos los gatos comprados -->
           <div
             v-for="gato in gatosComprados"
             :key="gato.id"
@@ -50,7 +48,6 @@
         </button>
       </div>
 
-      <!-- Apartado de estadísticas -->
       <div class="stats-sidebar">
         <h2>Estadísticas</h2>
         <p>Total de clics: {{ totalClicks }}</p>
@@ -70,30 +67,115 @@
 </template>
 
 <script>
-import { useGameLogic } from "./composables/useGameLogic.js";
-import rataImg from "./assets/rata.png";
+import { ref, watch } from "vue";
+import rataImg from "@/assets/rata.png";
+import gato1 from "@/assets/gato1.png";
+import gato2 from "@/assets/gato2.png";
+import gato3 from "@/assets/gato3.png";
+import oofSound from "@/assets/oof.mp3"; // Importar el sonido
+import "@/assets/style.css";
 
 export default {
   setup() {
-    const {
-      // Estados principales
-      puntaje,
-      totalClicks,
-      totalRatasHistoricas,
-      gatos,
-      gatosGuatones,
-      gatosHuevo,
-      gatosComprados,
-      bonificacionHuevo,
-      rataClicking,
+    const puntaje = ref(parseFloat(localStorage.getItem("puntaje")) || 0);
+    const totalClicks = ref(parseInt(localStorage.getItem("totalClicks")) || 0);
+    const totalRatasHistoricas = ref(
+      parseFloat(localStorage.getItem("totalRatasHistoricas")) || 0
+    );
 
-      // Métodos
-      clickear,
-      comprarGato,
-      comprarGatoGuaton,
-      comprarGatoHuevo,
-      reiniciarPartida,
-    } = useGameLogic();
+    const gatos = ref(parseInt(localStorage.getItem("gatos")) || 0);
+    const gatosGuatones = ref(parseInt(localStorage.getItem("gatosGuatones")) || 0);
+    const gatosHuevo = ref(parseInt(localStorage.getItem("gatosHuevo")) || 0);
+    const gatosComprados = ref(JSON.parse(localStorage.getItem("gatosComprados")) || []);
+    const bonificacionHuevo = ref(parseFloat(localStorage.getItem("bonificacionHuevo")) || 1);
+
+    const rataClicking = ref(false);
+
+    const audio = new Audio(oofSound); // Crear un objeto Audio con el sonido
+
+    const guardarEstado = () => {
+      localStorage.setItem("puntaje", puntaje.value);
+      localStorage.setItem("totalClicks", totalClicks.value);
+      localStorage.setItem("totalRatasHistoricas", totalRatasHistoricas.value);
+      localStorage.setItem("gatos", gatos.value);
+      localStorage.setItem("gatosGuatones", gatosGuatones.value);
+      localStorage.setItem("gatosHuevo", gatosHuevo.value);
+      localStorage.setItem("gatosComprados", JSON.stringify(gatosComprados.value));
+      localStorage.setItem("bonificacionHuevo", bonificacionHuevo.value);
+    };
+
+    watch(
+      [
+        puntaje,
+        totalClicks,
+        totalRatasHistoricas,
+        gatos,
+        gatosGuatones,
+        gatosHuevo,
+        gatosComprados,
+        bonificacionHuevo,
+      ],
+      guardarEstado
+    );
+
+    const handleRataClick = () => {
+      rataClicking.value = true;
+      puntaje.value += 1 + gatos.value * 0.1;
+      totalRatasHistoricas.value += 1 + gatos.value * 0.1;
+      totalClicks.value += 1;
+
+      audio.currentTime = 0; // Reiniciar el sonido cada vez que se haga clic
+      audio.play(); // Reproducir el sonido
+
+      setTimeout(() => {
+        rataClicking.value = false;
+      }, 200);
+    };
+
+    const comprarGato = () => {
+      if (puntaje.value >= 10) {
+        puntaje.value -= 10;
+        gatos.value += 1;
+        gatosComprados.value.push({ id: gatosComprados.value.length + 1, src: gato1 });
+      }
+    };
+
+    const comprarGatoGuaton = () => {
+      if (puntaje.value >= 50) {
+        puntaje.value -= 50;
+        gatosGuatones.value += 1;
+        gatosComprados.value.push({ id: gatosComprados.value.length + 1, src: gato2 });
+      }
+    };
+
+    const comprarGatoHuevo = () => {
+      if (puntaje.value >= 100) {
+        puntaje.value -= 100;
+        gatosHuevo.value += 1;
+        bonificacionHuevo.value += 0.05;
+        gatosComprados.value.push({ id: gatosComprados.value.length + 1, src: gato3 });
+      }
+    };
+
+    setInterval(() => {
+      const incrementoGuatones = gatosGuatones.value * 0.2 * bonificacionHuevo.value;
+      puntaje.value += incrementoGuatones;
+      totalRatasHistoricas.value += incrementoGuatones;
+    }, 1000);
+
+    const reiniciarPartida = () => {
+      if (confirm("¿Estás seguro de que deseas reiniciar la partida?")) {
+        puntaje.value = 0;
+        totalClicks.value = 0;
+        totalRatasHistoricas.value = 0;
+        gatos.value = 0;
+        gatosGuatones.value = 0;
+        gatosHuevo.value = 0;
+        bonificacionHuevo.value = 1;
+        gatosComprados.value = [];
+        guardarEstado();
+      }
+    };
 
     return {
       puntaje,
@@ -105,126 +187,14 @@ export default {
       gatosComprados,
       bonificacionHuevo,
       rataClicking,
-
-      clickear,
+      handleRataClick,
       comprarGato,
       comprarGatoGuaton,
       comprarGatoHuevo,
       reiniciarPartida,
-
       rataImg,
     };
   },
 };
 </script>
 
-<style>
-/* Mantén el diseño original */
-
-/* Estilo general */
-#app {
-  text-align: center;
-  font-family: Arial, sans-serif;
-  margin-top: 20px;
-  color: #333;
-}
-
-.container {
-  display: flex;
-  justify-content: space-between;
-}
-
-.main {
-  flex: 3;
-}
-
-.stats {
-  margin: 20px;
-  font-size: 20px;
-}
-
-.game {
-  margin: 30px;
-  position: relative;
-}
-
-.rata {
-  width: 150px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.rata-click {
-  transform: scale(1.2);
-}
-
-.upgrades button {
-  margin: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  background-color: #6c5ce7;
-  color: white;
-  transition: background-color 0.3s;
-}
-
-.upgrades button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.upgrades button:hover:enabled {
-  background-color: #4b4be7;
-}
-
-.gatos {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.gato-container {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-.gato {
-  width: 100px;
-  margin: 10px;
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.reset-button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: red;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.reset-button:hover {
-  background-color: darkred;
-}
-
-.stats-sidebar {
-  flex: 1;
-  background-color: #f4f4f4;
-  padding: 20px;
-  border-radius: 10px;
-}
-</style>
