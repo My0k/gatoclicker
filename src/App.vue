@@ -17,6 +17,7 @@
             :src="rataImg"
             alt="Rata"
             class="rata"
+            :class="{ 'rata-click': rataClicking }"
             @click="clickear"
           />
         </div>
@@ -84,6 +85,7 @@ export default {
       gatosHuevo,
       gatosComprados,
       bonificacionHuevo,
+      rataClicking,
 
       // Métodos
       clickear,
@@ -102,6 +104,7 @@ export default {
       gatosHuevo,
       gatosComprados,
       bonificacionHuevo,
+      rataClicking,
 
       clickear,
       comprarGato,
@@ -149,6 +152,10 @@ export default {
   width: 150px;
   cursor: pointer;
   transition: transform 0.2s ease;
+}
+
+.rata-click {
+  transform: scale(1.2);
 }
 
 .upgrades button {
