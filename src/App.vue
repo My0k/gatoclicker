@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <h1>¡Aniquila a las Ratas Malvadas!</h1>
+    <h1>¡Aniquila a las Ratas!</h1>
     <div class="container">
       <!-- Sección principal del juego -->
       <div class="main">
@@ -72,7 +72,7 @@ import rataImg from "@/assets/rata.png";
 import gato1 from "@/assets/gato1.png";
 import gato2 from "@/assets/gato2.png";
 import gato3 from "@/assets/gato3.png";
-import oofSound from "@/assets/oof.mp3"; // Importar el sonido
+import oofSound from "@/assets/oof.mp3";
 import "@/assets/style.css";
 
 export default {
@@ -91,7 +91,7 @@ export default {
 
     const rataClicking = ref(false);
 
-    const audio = new Audio(oofSound); // Crear un objeto Audio con el sonido
+    const audio = new Audio(oofSound);
 
     const guardarEstado = () => {
       localStorage.setItem("puntaje", puntaje.value);
@@ -124,8 +124,8 @@ export default {
       totalRatasHistoricas.value += 1 + gatos.value * 0.1;
       totalClicks.value += 1;
 
-      audio.currentTime = 0; // Reiniciar el sonido cada vez que se haga clic
-      audio.play(); // Reproducir el sonido
+      audio.currentTime = 0;
+      audio.play();
 
       setTimeout(() => {
         rataClicking.value = false;
