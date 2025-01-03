@@ -1,11 +1,12 @@
 <template>
   <div id="app">
     <h1>¡Aniquila a las Ratas!</h1>
+    <h2>Ratas eliminadas en total: {{ totalRatasHistoricas.toFixed(0) }}</h2>
     <div class="container">
       <!-- Sección principal del juego -->
       <div class="main">
         <div class="stats">
-          <p>Puntaje: {{ puntaje.toFixed(5) }}</p>
+          <p>Puntaje: {{ puntaje.toFixed(0) }}</p>
           <p>Gatos pequeños: {{ gatos }}</p>
           <p>Gatos guatones: {{ gatosGuatones }}</p>
           <p>Gatos Huevo: {{ gatosHuevo }}</p>
@@ -51,16 +52,17 @@
       <div class="stats-sidebar">
         <h2>Estadísticas</h2>
         <p>Total de clics: {{ totalClicks }}</p>
-        <p>Total histórico de ratas aniquiladas: {{ totalRatasHistoricas.toFixed(5) }}</p>
-        <p>Incremento por clic: +{{ (1 + gatos * 0.1).toFixed(5) }}</p>
+        <p>Total histórico de ratas aniquiladas: {{ totalRatasHistoricas.toFixed(0) }}</p>
+        <p>Incremento por clic: +{{ (1 + gatos * 0.1).toFixed(1) }}</p>
         <p>
           Ratas por segundo:
-          +{{ (gatosGuatones * 0.2 * bonificacionHuevo).toFixed(5) }}
+          +{{ (gatosGuatones * 0.2 * bonificacionHuevo).toFixed(1) }}
         </p>
         <p>
           Bonificación por Gato Huevo:
-          +{{ ((bonificacionHuevo - 1) * 100).toFixed(5) }}%
+          +{{ ((bonificacionHuevo - 1) * 100).toFixed(1) }}%
         </p>
+        <p>Tiempo de juego: {{ tiempoJuego }}</p>
       </div>
     </div>
   </div>
@@ -87,9 +89,12 @@ export default {
     const gatosGuatones = ref(parseInt(localStorage.getItem("gatosGuatones")) || 0);
     const gatosHuevo = ref(parseInt(localStorage.getItem("gatosHuevo")) || 0);
     const gatosComprados = ref(JSON.parse(localStorage.getItem("gatosComprados")) || []);
-    const bonificacionHuevo = ref(parseFloat(localStorage.getItem("bonificacionHuevo")) || 1);
+    const bonificacionHuevo = ref(
+      parseFloat(localStorage.getItem("bonificacionHuevo")) || 1
+    );
 
     const rataClicking = ref(false);
+    const tiempoJuego = ref("0:00");
 
     const audio = new Audio(oofSound);
 
@@ -163,6 +168,13 @@ export default {
       totalRatasHistoricas.value += incrementoGuatones;
     }, 1000);
 
+    setInterval(() => {
+      const segundosTotales = Math.floor(Date.now() / 1000);
+      const minutos = Math.floor(segundosTotales / 60);
+      const segundos = segundosTotales % 60;
+      tiempoJuego.value = `${minutos}:${segundos.toString().padStart(2, "0")}`;
+    }, 1000);
+
     const reiniciarPartida = () => {
       if (confirm("¿Estás seguro de que deseas reiniciar la partida?")) {
         puntaje.value = 0;
@@ -187,6 +199,7 @@ export default {
       gatosComprados,
       bonificacionHuevo,
       rataClicking,
+      tiempoJuego,
       handleRataClick,
       comprarGato,
       comprarGatoGuaton,
@@ -197,4 +210,8 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* Agrega estilos personalizados aquí */
+</style>
 
